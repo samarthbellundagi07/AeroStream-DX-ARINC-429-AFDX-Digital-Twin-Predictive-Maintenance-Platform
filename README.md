@@ -37,7 +37,20 @@ graph TD
     C -->|Stats| G[AI Report Generator]
 ```
 
-*For detailed diagrams, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).*
+---
+
+## 🎖 Portfolio Impact & Technical Achievements
+
+### 🛠 Technical Deep Dive
+- **Protocol Engineering**: Implemented custom bit-masking logic for ARINC 429 ODD parity verification.
+- **Predictive Health Monitoring**: Developed a linear degradation model to estimate Remaining Useful Life (RUL) based on stress-weighted mission profiles.
+- **Generative AI Integration**: Engineered Genkit flows with specialized system prompts to act as a Senior Avionics Architect for Root Cause Analysis (RCA).
+- **HUD Interface**: Built a high-density, low-latency UI using Shadcn/UI and Recharts for real-time telemetry visualization.
+
+### 🎯 Demonstration Scenarios
+1. **Nominal Flight**: Observe stable bus utilization and 0% error rates.
+2. **Hydraulic Leak**: Trigger via Scenario Controller; observe PSI drop and subsequent bus alarms.
+3. **AI Diagnostic**: Execute the "AI Analysis" in the Maintenance Hub to see root cause suggestions.
 
 ---
 
@@ -51,28 +64,17 @@ graph TD
 
 ---
 
-## 📋 Installation & Demo
+## 📋 Installation & Setup
 
 ### Prerequisites
 - Node.js 20+
-- Google Gemini API Key (for AI diagnostics)
+- Google Gemini API Key
 
 ### Setup
 1. Clone the repository.
 2. Create a `.env` file with `GOOGLE_GENAI_API_KEY`.
 3. Install dependencies: `npm install`
-4. Run simulation: `npm run dev`
-
-### Demo Scenarios
-1. **Nominal Flight**: Observe stable bus utilization and 0% error rates.
-2. **Hydraulic Leak**: Trigger via Scenario Controller; observe PSI drop and subsequent bus alarms.
-3. **AI Diagnostic**: Click "Execute AI Analysis" in the Maintenance Hub to see root cause suggestions.
-
----
-
-## 🎖 Resume Impact
-**AeroStream DX – Aircraft Maintenance Diagnostic Platform**
-*Developed an aerospace-inspired diagnostic platform featuring ARINC 429/AFDX simulation, digital twin modeling, and predictive health monitoring. Implemented AI-driven RUL estimation and automated fault isolation workflows for critical aircraft subsystems.*
+4. Run development mode: `npm run dev`
 
 ---
 

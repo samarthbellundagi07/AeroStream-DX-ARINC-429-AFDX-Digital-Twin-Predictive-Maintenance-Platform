@@ -164,7 +164,7 @@ Overall System Status: {{{digitalTwinStatus.overallSystemStatus}}}
 
 ---
 
-Please generate the comprehensive diagnostic report in JSON format, strictly adhering to the \`AIDiagnosticReportOutputSchema\`. Ensure all fields are thoroughly populated based on the provided data and your expert analysis as an Aerospace Software Engineer, Avionics Systems Architect, and Aircraft Maintenance Diagnostics Expert.
+Please generate the comprehensive diagnostic report in JSON format, strictly adhering to the "AIDiagnosticReportOutputSchema". Ensure all fields are thoroughly populated based on the provided data and your expert analysis as an Aerospace Software Engineer, Avionics Systems Architect, and Aircraft Maintenance Diagnostics Expert.
 `
 });
 

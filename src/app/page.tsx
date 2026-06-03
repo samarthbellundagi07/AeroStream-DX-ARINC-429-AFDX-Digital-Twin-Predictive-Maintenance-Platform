@@ -19,19 +19,20 @@ import {
   Terminal, 
   BarChart3, 
   FileText, 
-  Database, 
   Settings, 
   Activity, 
-  Clock, 
-  Zap, 
-  ShieldAlert,
-  Wrench,
-  Maximize2,
-  Plane,
-  PlayCircle
+  Wrench, 
+  Plane, 
+  PlayCircle 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/**
+ * AeroStream DX | Primary Dashboard Container
+ * 
+ * Orchestrates the real-time simulation stream, scenario management,
+ * and navigation between major engineering workstations.
+ */
 export default function AeroStreamDXDashboard() {
   const [arincStream, setArincStream] = useState<Arinc429Word[]>([]);
   const [afdxStream, setAfdxStream] = useState<AfdxFrame[]>([]);
@@ -42,7 +43,7 @@ export default function AeroStreamDXDashboard() {
   const [view, setView] = useState<'monitor' | 'maintenance' | 'analytics' | 'reports' | 'scenario'>('monitor');
   const [currentScenario, setCurrentScenario] = useState<FlightScenario>('NORMAL');
 
-  // Simulation Loop
+  // Primary Simulation Loop (1Hz Update Frequency)
   useEffect(() => {
     const interval = setInterval(() => {
       const newArinc = BusSimulator.generateArincWord(activeFaults);
