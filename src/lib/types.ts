@@ -33,20 +33,25 @@ export interface SubsystemStatus {
   health: 'Nominal' | 'Degraded' | 'Critical';
   value: number;
   unit: string;
+  trend: 'up' | 'down' | 'stable';
 }
 
 export interface FaultConfig {
-  type: string;
-  rate: number;
-  duration: number;
+  id: string;
+  name: string;
+  type: 'ARINC' | 'AFDX' | 'SYSTEM';
+  description: string;
   severity: 'Low' | 'Medium' | 'High' | 'Critical';
   active: boolean;
 }
 
 export interface BusMetrics {
+  timestamp: string;
   throughput: number;
   latency: number;
   packetRate: number;
   utilization: number;
   errorRate: number;
+  arincRate: number;
+  afdxRate: number;
 }
