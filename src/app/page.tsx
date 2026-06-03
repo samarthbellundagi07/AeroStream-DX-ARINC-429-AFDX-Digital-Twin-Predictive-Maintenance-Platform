@@ -2,18 +2,32 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { BusSimulator } from "@/lib/bus-simulator";
-import { Arinc429Word, AfdxFrame, SubsystemStatus, BusMetrics, FaultConfig } from "@/lib/types";
+import { Arinc429Word, AfdxFrame, SubsystemStatus, BusMetrics, FaultConfig, Defect } from "@/lib/types";
 import { TelemetryStream } from "@/components/bus/telemetry-stream";
 import { FaultInjector } from "@/components/bus/fault-injector";
 import { PerformanceOscilloscope } from "@/components/bus/performance-oscilloscope";
 import { StatusDashboard } from "@/components/digital-twin/status-dashboard";
 import { MaintenanceTool } from "@/components/ai/maintenance-tool";
+import { MaintenanceConsole } from "@/components/maintenance/console";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Settings, FileText, LayoutDashboard, Database, Activity, Terminal, ShieldAlert, Zap, BarChart3, Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { 
+  LayoutDashboard, 
+  Terminal, 
+  BarChart3, 
+  FileText, 
+  Database, 
+  Settings, 
+  Activity, 
+  Clock, 
+  Zap, 
+  ShieldAlert,
+  Wrench,
+  Maximize2
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function AeroStreamDXDashboard() {
   const [arincStream, setArincStream] = useState<Arinc429Word[]>([]);
@@ -21,9 +35,10 @@ export default function AeroStreamDXDashboard() {
   const [subsystems, setSubsystems] = useState<SubsystemStatus[]>([]);
   const [metricsHistory, setMetricsHistory] = useState<BusMetrics[]>([]);
   const [activeFaults, setActiveFaults] = useState<FaultConfig[]>([]);
-  const [view, setView] = useState<'monitor' | 'analytics' | 'reports'>('monitor');
+  const [defects, setDefects] = useState<Defect[]>([]);
+  const [view, setView] = useState<'monitor' | 'maintenance' | 'analytics' | 'reports'>('monitor');
 
-  // Simulation loop
+  // Unified Simulation Stream
   useEffect(() => {
     const interval = setInterval(() => {
       const newArinc = BusSimulator.generateArincWord(activeFaults);
@@ -32,37 +47,34 @@ export default function AeroStreamDXDashboard() {
       setArincStream(prev => [newArinc, ...prev].slice(0, 100));
       setAfdxStream(prev => [newAfdx, ...prev].slice(0, 100));
       setSubsystems(BusSimulator.getSubsystemStatus());
+      setDefects(BusSimulator.getDefectHistory());
       
-      const lastMetrics = metricsHistory[metricsHistory.length - 1];
       const faultImpact = activeFaults.filter(f => f.active).length;
+      const anomalies = [newArinc, newAfdx].filter(x => !x.isValid).length;
       
       const newMetrics: BusMetrics = {
         timestamp: new Date().toLocaleTimeString(),
-        throughput: 45 + Math.random() * 10 + (faultImpact * 8),
-        latency: 1.5 + Math.random() * 0.5 + (faultImpact > 0 ? 2 : 0),
-        packetRate: 120 + Math.random() * 20,
-        utilization: 15 + (faultImpact * 5) + (Math.random() * 2),
-        errorRate: (faultImpact * 4.5) + (Math.random() * 0.5),
-        arincRate: 60 + Math.random() * 10,
-        afdxRate: 40 + Math.random() * 5
+        throughput: 42 + Math.random() * 8 + (faultImpact * 5),
+        latency: 1.2 + Math.random() * 0.4 + (faultImpact > 0 ? 1 : 0),
+        packetRate: 150 + Math.random() * 30,
+        utilization: 12 + (faultImpact * 4) + (Math.random() * 2),
+        errorRate: (faultImpact * 3.5) + (Math.random() * 0.5),
+        arincRate: 85 + Math.random() * 15,
+        afdxRate: 55 + Math.random() * 10,
+        anomalyCount: anomalies
       };
 
       setMetricsHistory(prev => [...prev, newMetrics].slice(-50));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [activeFaults, metricsHistory]);
-
-  const anomalies = useMemo(() => [
-    ...arincStream.filter(w => !w.isValid),
-    ...afdxStream.filter(f => !f.isValid || !f.isCompliant)
-  ], [arincStream, afdxStream]);
+  }, [activeFaults]);
 
   const currentMetrics = metricsHistory[metricsHistory.length - 1] || {
-    throughput: 0, latency: 0, packetRate: 0, utilization: 0, errorRate: 0, arincRate: 0, afdxRate: 0
+    throughput: 0, latency: 0, packetRate: 0, utilization: 0, errorRate: 0, arincRate: 0, afdxRate: 0, anomalyCount: 0
   };
 
-  const systemStatus = currentMetrics.errorRate > 10 ? 'Critical' : currentMetrics.errorRate > 5 ? 'Warning' : 'Normal';
+  const systemStatus = currentMetrics.errorRate > 8 ? 'Critical' : currentMetrics.errorRate > 3 ? 'Warning' : 'Normal';
 
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden font-body selection:bg-primary/20">
@@ -81,31 +93,31 @@ export default function AeroStreamDXDashboard() {
         <nav className="flex-1 space-y-1.5">
           <SidebarItem 
             icon={<LayoutDashboard className="w-4 h-4" />} 
-            label="Bus Monitor" 
+            label="Real-Time Monitor" 
             active={view === 'monitor'} 
             onClick={() => setView('monitor')} 
           />
           <SidebarItem 
-            icon={<Terminal className="w-4 h-4" />} 
-            label="Diagnostic Hub" 
-            active={false}
-            disabled
+            icon={<Wrench className="w-4 h-4" />} 
+            label="Maintenance Console" 
+            active={view === 'maintenance'} 
+            onClick={() => setView('maintenance')} 
           />
           <SidebarItem 
             icon={<BarChart3 className="w-4 h-4" />} 
-            label="Performance" 
+            label="System Analytics" 
             active={view === 'analytics'} 
             onClick={() => setView('analytics')} 
           />
           <SidebarItem 
             icon={<FileText className="w-4 h-4" />} 
-            label="Mission Reports" 
+            label="Diagnostic Reports" 
             active={view === 'reports'} 
             onClick={() => setView('reports')} 
           />
           <SidebarItem 
             icon={<Database className="w-4 h-4" />} 
-            label="Black Box Data" 
+            label="Telemetry History" 
             active={false}
             disabled
           />
@@ -114,7 +126,7 @@ export default function AeroStreamDXDashboard() {
         <div className="mt-auto pt-6 border-t border-border/30 space-y-5">
           <div className="px-2">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">System Health</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Global Health</span>
               <Badge variant={systemStatus === 'Normal' ? 'outline' : 'destructive'} className={cn("text-[9px] py-0", systemStatus === 'Normal' && "text-accent border-accent/30")}>
                 {systemStatus.toUpperCase()}
               </Badge>
@@ -122,40 +134,41 @@ export default function AeroStreamDXDashboard() {
             <div className="h-1.5 w-full bg-secondary/50 rounded-full overflow-hidden">
               <div 
                 className={cn("h-full transition-all duration-500", systemStatus === 'Normal' ? "bg-accent" : systemStatus === 'Warning' ? "bg-yellow-500" : "bg-destructive")} 
-                style={{ width: `${100 - currentMetrics.errorRate}%` }} 
+                style={{ width: `${100 - currentMetrics.errorRate * 5}%` }} 
               />
             </div>
           </div>
           <Button variant="outline" className="w-full gap-2 text-xs uppercase font-headline border-primary/20 hover:border-primary/50 bg-primary/5">
-            <Settings className="w-3 h-3" /> System Config
+            <Settings className="w-3 h-3" /> Preferences
           </Button>
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Top Header Metrics */}
+        {/* Operations Header */}
         <header className="h-20 border-b border-border/40 flex items-center justify-between px-8 bg-card/10 backdrop-blur-md shrink-0 z-10">
           <div className="flex items-center gap-10">
-            <HeaderMetric label="ARINC Rate" value={`${currentMetrics.arincRate.toFixed(1)} w/s`} icon={<Clock className="w-3 h-3 text-primary" />} />
-            <HeaderMetric label="AFDX Rate" value={`${currentMetrics.afdxRate.toFixed(1)} f/s`} icon={<Zap className="w-3 h-3 text-accent" />} />
-            <HeaderMetric label="Bus Load" value={`${currentMetrics.utilization.toFixed(1)}%`} progress={currentMetrics.utilization} />
-            <HeaderMetric label="Anomalies" value={anomalies.length} color={anomalies.length > 0 ? "text-destructive" : "text-accent"} />
+            <HeaderMetric label="ARINC 429 Stream" value={`${currentMetrics.arincRate.toFixed(1)} w/s`} icon={<Clock className="w-3 h-3 text-primary" />} />
+            <HeaderMetric label="AFDX 664 Stream" value={`${currentMetrics.afdxRate.toFixed(1)} f/s`} icon={<Zap className="w-3 h-3 text-accent" />} />
+            <HeaderMetric label="Bus Utilization" value={`${currentMetrics.utilization.toFixed(1)}%`} progress={currentMetrics.utilization} />
+            <HeaderMetric label="Live Anomalies" value={currentMetrics.anomalyCount} color={currentMetrics.anomalyCount > 0 ? "text-destructive" : "text-accent"} />
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Maintenance Rank</div>
-              <div className="text-xs font-bold font-headline text-primary">CHIEF ENGINEER</div>
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary"><Maximize2 className="w-4 h-4" /></Button>
+            <div className="w-[1px] h-8 bg-border/40 mx-2" />
+            <div className="text-right">
+              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Maintenance Mode</div>
+              <div className="text-xs font-bold font-headline text-primary">FULL ENGINEERING ACCESS</div>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center relative group cursor-pointer">
-              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-              <span className="font-headline font-bold text-primary relative z-10">DX</span>
+            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center font-headline font-bold text-primary">
+              DX
             </div>
           </div>
         </header>
 
-        {/* Workspace */}
+        {/* Viewport */}
         <div className="flex-1 overflow-y-auto p-8 space-y-8 terminal-scroll">
           {view === 'monitor' && (
             <>
@@ -165,13 +178,13 @@ export default function AeroStreamDXDashboard() {
                 <div className="xl:col-span-8 space-y-8">
                   <Tabs defaultValue="arinc" className="w-full">
                     <TabsList className="bg-secondary/20 border border-border/30 p-1 mb-4">
-                      <TabsTrigger value="arinc" className="font-headline uppercase text-[11px] tracking-widest data-[state=active]:bg-primary px-6">ARINC 429 MONITOR</TabsTrigger>
-                      <TabsTrigger value="afdx" className="font-headline uppercase text-[11px] tracking-widest data-[state=active]:bg-accent data-[state=active]:text-black px-6">AFDX DATA BUS</TabsTrigger>
+                      <TabsTrigger value="arinc" className="font-headline uppercase text-[11px] tracking-widest px-6">ARINC 429 PROTOCOL ENGINE</TabsTrigger>
+                      <TabsTrigger value="afdx" className="font-headline uppercase text-[11px] tracking-widest px-6">AFDX 664 VIRTUAL LINKS</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="arinc" className="h-[450px] outline-none">
+                    <TabsContent value="arinc" className="h-[480px] outline-none">
                       <TelemetryStream type="ARINC" arincWords={arincStream} afdxFrames={[]} />
                     </TabsContent>
-                    <TabsContent value="afdx" className="h-[450px] outline-none">
+                    <TabsContent value="afdx" className="h-[480px] outline-none">
                       <TelemetryStream type="AFDX" arincWords={[]} afdxFrames={afdxStream} />
                     </TabsContent>
                   </Tabs>
@@ -180,20 +193,20 @@ export default function AeroStreamDXDashboard() {
                 </div>
                 
                 <div className="xl:col-span-4 space-y-8">
-                  <MaintenanceTool currentAnomalies={anomalies} />
+                  <MaintenanceTool currentAnomalies={[...arincStream, ...afdxStream].filter(x => !x.isValid)} />
                   
-                  <Card className="bg-card/20 hud-border border-primary/10 overflow-hidden">
+                  <Card className="bg-card/20 hud-border border-primary/10">
                     <CardHeader className="py-4 border-b border-border/30 bg-primary/5">
                       <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-primary" />
-                        <CardTitle className="text-xs font-headline uppercase tracking-[0.2em]">Real-time Statistics</CardTitle>
+                        <Terminal className="w-4 h-4 text-primary" />
+                        <CardTitle className="text-xs font-headline uppercase tracking-widest">Diagnostic Summary</CardTitle>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-6 space-y-6">
-                      <StatRow label="Network Utilization" value={`${currentMetrics.utilization.toFixed(1)}%`} subValue="Avg: 14.2%" />
-                      <StatRow label="Bit Error Rate (BER)" value={`${(currentMetrics.errorRate / 100).toFixed(4)}`} subValue="Target: < 0.001" alert={currentMetrics.errorRate > 5} />
-                      <StatRow label="Mean Packet Jitter" value="0.04ms" subValue="Max: 0.12ms" />
-                      <StatRow label="Frames Processed" value="2.4M" subValue="+1.2k/s" />
+                    <CardContent className="p-6 space-y-5">
+                      <StatRow label="Bit Error Rate" value={(currentMetrics.errorRate / 1000).toFixed(6)} subValue="Goal: < 1E-9" />
+                      <StatRow label="BAG Compliance" value="99.8%" subValue="Jitter Max: 0.12ms" />
+                      <StatRow label="Label Density" value="6 Active" subValue="Max: 256/bus" />
+                      <StatRow label="System Latency" value={`${currentMetrics.latency.toFixed(2)}ms`} subValue="Avg: 1.25ms" />
                     </CardContent>
                   </Card>
                 </div>
@@ -201,70 +214,54 @@ export default function AeroStreamDXDashboard() {
             </>
           )}
 
-          {view === 'analytics' && (
+          {view === 'maintenance' && (
             <div className="space-y-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-headline font-bold uppercase tracking-tight flex items-center gap-3">
-                  <Activity className="w-8 h-8 text-primary" /> Performance Oscilloscope
+               <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-headline font-bold uppercase tracking-tight flex items-center gap-4">
+                  <Wrench className="w-10 h-10 text-primary" /> Aircraft Maintenance Console
                 </h2>
-                <div className="flex gap-3">
-                   <Button variant="outline" className="text-xs font-headline uppercase border-primary/30">Last 24 Hours</Button>
-                   <Button variant="outline" className="text-xs font-headline uppercase border-primary/30">Download Data</Button>
+                <div className="flex gap-4">
+                  <Button variant="outline" className="font-headline uppercase text-xs">Clear Master Warning</Button>
+                  <Button className="bg-primary hover:bg-primary/80 font-headline uppercase text-xs">Acknowledge All</Button>
                 </div>
               </div>
-              <PerformanceOscilloscope data={metricsHistory} />
-              
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                 <AnalyticsCard label="ARINC THROUGHPUT" value={`${currentMetrics.throughput.toFixed(1)} Mbps`} trend="+12%" />
-                 <AnalyticsCard label="SYSTEM LATENCY" value={`${currentMetrics.latency.toFixed(2)} ms`} trend="-2%" neutral />
-                 <AnalyticsCard label="BUS CONGESTION" value={`${currentMetrics.utilization.toFixed(1)}%`} trend="+5%" alert={currentMetrics.utilization > 30} />
-                 <AnalyticsCard label="ACTIVE FAULTS" value={activeFaults.filter(f => f.active).length} trend={activeFaults.length > 0 ? "WARNING" : "NOMINAL"} alert={activeFaults.length > 0} />
+              <MaintenanceConsole defects={defects} subsystems={subsystems} />
+            </div>
+          )}
+
+          {view === 'analytics' && (
+            <div className="space-y-8">
+               <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-headline font-bold uppercase tracking-tight flex items-center gap-4">
+                  <Activity className="w-10 h-10 text-primary" /> Performance Analysis
+                </h2>
               </div>
+              <PerformanceOscilloscope data={metricsHistory} />
             </div>
           )}
 
           {view === 'reports' && (
-            <div className="space-y-8">
-               <h2 className="text-3xl font-headline font-bold uppercase tracking-tight flex items-center gap-3">
-                <FileText className="w-8 h-8 text-primary" /> Mission Diagnostic Reports
-              </h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card className="bg-card/20 hud-border overflow-hidden border-primary/10">
-                  <div className="p-8">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-primary/10 rounded-lg"><FileText className="w-5 h-5 text-primary" /></div>
-                      <h3 className="font-headline font-bold text-xl uppercase tracking-wider">Mission Summary Report</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-                      Generate a comprehensive engineering report including bit-level analysis of the last 100,000 ARINC words 
-                      and AFDX frames, cross-referenced with simulated digital twin health degradation.
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <Button className="w-full justify-start gap-3 bg-primary hover:bg-primary/80 font-headline uppercase text-[10px] tracking-widest py-6">
-                        <FileText className="w-4 h-4" /> Export Aerospace PDF
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start gap-3 bg-secondary/30 border-border/50 font-headline uppercase text-[10px] tracking-widest py-6">
-                        <Database className="w-4 h-4 text-accent" /> Raw Data (JSON/CSV)
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
+            <div className="max-w-4xl mx-auto space-y-12 py-10">
+              <div className="text-center space-y-4">
+                <FileText className="w-16 h-16 text-primary mx-auto mb-6" />
+                <h2 className="text-4xl font-headline font-bold uppercase tracking-tighter">Mission Diagnostic Reports</h2>
+                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                  Generate aerospace-compliant documentation for aircraft maintenance logs and engineering review.
+                </p>
+              </div>
 
-                <Card className="bg-card/20 hud-border overflow-hidden border-destructive/10">
-                  <div className="p-8">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-destructive/10 rounded-lg"><ShieldAlert className="w-5 h-5 text-destructive" /></div>
-                      <h3 className="font-headline font-bold text-xl uppercase tracking-wider">Failure Analysis log</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-                      Detailed chronological log of all injected faults and detected anomalies, including root cause 
-                      assessment provided by the AeroStream AI Engine.
-                    </p>
-                    <Button variant="outline" className="w-full justify-center gap-3 border-destructive/30 hover:bg-destructive/10 text-destructive font-headline uppercase text-[10px] tracking-widest py-6">
-                      <Activity className="w-4 h-4" /> Archive Failure Report
-                    </Button>
-                  </div>
-                </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <ReportCard 
+                  title="Full Mission Analysis" 
+                  desc="Detailed bit-level log of all ARINC 429 and AFDX frames processed during the current session." 
+                  icon={<Database className="w-6 h-6 text-primary" />}
+                />
+                <ReportCard 
+                  title="Failure Analysis Log" 
+                  desc="Focuses on parity errors, CRC violations, and BAG compliance failures detected by AI." 
+                  icon={<ShieldAlert className="w-6 h-6 text-destructive" />}
+                  variant="destructive"
+                />
               </div>
             </div>
           )}
@@ -274,7 +271,7 @@ export default function AeroStreamDXDashboard() {
   );
 }
 
-function SidebarItem({ icon, label, active, onClick, disabled = false }: { icon: any, label: string, active: boolean, onClick?: () => void, disabled?: boolean }) {
+function SidebarItem({ icon, label, active, onClick, disabled = false }: any) {
   return (
     <Button 
       variant="ghost" 
@@ -294,9 +291,9 @@ function SidebarItem({ icon, label, active, onClick, disabled = false }: { icon:
   );
 }
 
-function HeaderMetric({ label, value, icon, color = "text-foreground", progress }: { label: string, value: string | number, icon?: any, color?: string, progress?: number }) {
+function HeaderMetric({ label, value, icon, color = "text-foreground", progress }: any) {
   return (
-    <div className="flex flex-col gap-1.5 min-w-[100px]">
+    <div className="flex flex-col gap-1.5 min-w-[120px]">
       <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">{label}</span>
       <div className="flex items-center gap-2">
         {icon && icon}
@@ -311,12 +308,12 @@ function HeaderMetric({ label, value, icon, color = "text-foreground", progress 
   );
 }
 
-function StatRow({ label, value, subValue, alert = false }: { label: string, value: string, subValue: string, alert?: boolean }) {
+function StatRow({ label, value, subValue }: any) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex justify-between items-baseline">
-        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">{label}</span>
-        <span className={cn("font-headline font-bold text-sm", alert ? "text-destructive" : "text-primary")}>{value}</span>
+        <span className="text-[10px] text-muted-foreground uppercase font-bold">{label}</span>
+        <span className="font-headline font-bold text-sm text-primary">{value}</span>
       </div>
       <span className="text-[9px] text-muted-foreground opacity-60 text-right">{subValue}</span>
       <div className="h-[1px] w-full bg-border/20 mt-1" />
@@ -324,14 +321,18 @@ function StatRow({ label, value, subValue, alert = false }: { label: string, val
   );
 }
 
-function AnalyticsCard({ label, value, trend, neutral = false, alert = false }: { label: string, value: string | number, trend: string, neutral?: boolean, alert?: boolean }) {
+function ReportCard({ title, desc, icon, variant = "default" }: any) {
   return (
-    <Card className={cn("bg-card/20 hud-border p-6 flex flex-col items-center justify-center text-center border-primary/10 transition-transform hover:scale-[1.02]", alert && "border-destructive/30")}>
-      <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-3 opacity-70">{label}</span>
-      <span className={cn("text-4xl font-headline font-bold", alert ? "text-destructive" : "text-foreground")}>{value}</span>
-      <Badge variant="outline" className={cn("mt-4 text-[9px] py-0 tracking-widest border-border/50", neutral ? "text-muted-foreground" : alert ? "text-destructive border-destructive/20" : "text-accent border-accent/20")}>
-        {trend}
-      </Badge>
+    <Card className={cn("bg-card/20 hud-border p-8 hover:scale-[1.02] transition-transform", variant === 'destructive' ? 'border-destructive/20' : 'border-primary/20')}>
+      <div className="flex items-center gap-4 mb-4">
+        <div className={cn("p-3 rounded-xl", variant === 'destructive' ? 'bg-destructive/10' : 'bg-primary/10')}>{icon}</div>
+        <h3 className="font-headline font-bold text-xl uppercase tracking-wider">{title}</h3>
+      </div>
+      <p className="text-sm text-muted-foreground mb-8 leading-relaxed">{desc}</p>
+      <div className="flex gap-4">
+        <Button className={cn("flex-1 font-headline text-[10px] tracking-widest uppercase py-6", variant === 'destructive' ? 'bg-destructive' : 'bg-primary')}>Export PDF</Button>
+        <Button variant="outline" className="flex-1 font-headline text-[10px] tracking-widest uppercase py-6">CSV / Excel</Button>
+      </div>
     </Card>
   );
 }

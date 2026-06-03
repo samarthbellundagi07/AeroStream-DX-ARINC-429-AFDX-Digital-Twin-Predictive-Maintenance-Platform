@@ -7,9 +7,11 @@ export interface Arinc429Word {
   sdi: string;   // Source/Destination Identifier (2 bits)
   data: string;  // Data field (19 bits)
   ssm: SSM;
-  parity: number; // 1 or 0
-  raw: string;    // 32-bit hex
+  parity: number; // 1 or 0 (Odd parity)
+  raw: string;    // 32-bit hex representation
   isValid: boolean;
+  engineeringValue?: number;
+  unit?: string;
   error?: string;
 }
 
@@ -24,6 +26,8 @@ export interface AfdxFrame {
   isCompliant: boolean;
   crc: string;
   isValid: boolean;
+  jitter: number;     // ms
+  latency: number;    // ms
   error?: string;
 }
 
@@ -34,6 +38,19 @@ export interface SubsystemStatus {
   value: number;
   unit: string;
   trend: 'up' | 'down' | 'stable';
+  remainingUsefulLife: number; // Hours
+  nextMaintenanceDate: string;
+  riskScore: number; // 0-100
+}
+
+export interface Defect {
+  id: string;
+  timestamp: string;
+  subsystem: string;
+  description: string;
+  severity: 'Low' | 'Medium' | 'High' | 'Critical';
+  status: 'Open' | 'Investigating' | 'Resolved';
+  recommendation?: string;
 }
 
 export interface FaultConfig {
@@ -54,4 +71,5 @@ export interface BusMetrics {
   errorRate: number;
   arincRate: number;
   afdxRate: number;
+  anomalyCount: number;
 }
