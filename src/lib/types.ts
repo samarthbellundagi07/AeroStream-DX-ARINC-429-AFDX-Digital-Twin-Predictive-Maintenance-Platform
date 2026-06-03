@@ -13,6 +13,7 @@ export interface Arinc429Word {
   engineeringValue?: number;
   unit?: string;
   error?: string;
+  binary?: string; // Full 32-bit string
 }
 
 export interface AfdxFrame {
@@ -38,9 +39,10 @@ export interface SubsystemStatus {
   value: number;
   unit: string;
   trend: 'up' | 'down' | 'stable';
-  remainingUsefulLife: number; // Hours
+  remainingUsefulLife: number; // Flight Hours
   nextMaintenanceDate: string;
   riskScore: number; // 0-100
+  failureProbability: number; // 0.0 - 1.0
 }
 
 export interface Defect {
@@ -51,6 +53,7 @@ export interface Defect {
   severity: 'Low' | 'Medium' | 'High' | 'Critical';
   status: 'Open' | 'Investigating' | 'Resolved';
   recommendation?: string;
+  isolationSteps?: string[];
 }
 
 export interface FaultConfig {
@@ -72,4 +75,12 @@ export interface BusMetrics {
   arincRate: number;
   afdxRate: number;
   anomalyCount: number;
+}
+
+export type FlightScenario = 'NORMAL' | 'HYDRAULIC_FAILURE' | 'ENGINE_OVERHEAT' | 'ELECTRICAL_BUS_FAIL' | 'FUEL_LEAK';
+
+export interface ScenarioState {
+  active: FlightScenario;
+  description: string;
+  startTime: string;
 }
