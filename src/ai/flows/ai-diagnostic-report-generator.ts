@@ -86,86 +86,36 @@ const generateAIDiagnosticReportPrompt = ai.definePrompt({
   name: 'generateAIDiagnosticReportPrompt',
   input: { schema: AIDiagnosticReportInputSchema },
   output: { schema: AIDiagnosticReportOutputSchema },
-  prompt: `You are a Senior Aerospace Software Engineer, Avionics Systems Architect, and Aircraft Maintenance Diagnostics Expert. Your task is to generate a comprehensive diagnostic report for an avionics bus system, based on the provided data.
+  prompt: `You are a Senior Aerospace Software Engineer and Avionics Architect. Generate a professional diagnostic report based on the provided mission telemetry.
 
-The report must address the following aspects and provide detailed, actionable insights.
+### Data Context:
 
-### Report Sections:
+#### ARINC 429:
+Rate: {{{arincStatistics.wordTransmissionRate}}} w/s
+Parity Fail Rate: {{{arincStatistics.parityFailureRate}}}%
+Total Processed: {{{arincStatistics.totalWordsProcessed}}}
 
-1.  **Executive Summary**: Provide an overall assessment of the system's health, highlight critical findings, and summarize key recommendations.
-2.  **Communication Analysis**:
-    *   **ARINC 429 Summary**: Analyze the provided ARINC statistics, focusing on rates, frequencies, and parity errors.
-    *   **AFDX (ARINC 664) Summary**: Analyze the provided AFDX statistics, focusing on throughput, latency, jitter, BAG compliance, virtual link load, and frame delivery success.
-    *   **Overall Error Summary**: Summarize all detected communication errors (ARINC and AFDX) and their potential impact on system operation and reliability.
-3.  **Fault Analysis**:
-    *   **Injected Faults Summary**: Summarize the manually injected faults, their types, locations, severities, durations, and observed effects.
-    *   **Detected Anomalies Summary**: Summarize all detected anomalies, including their types (sensor/communication), associated IDs (sensor/VL), timestamps, severity, confidence scores, and detailed descriptions. Discuss their potential impact.
-    *   **Root Cause Assessment**: Provide a detailed, AI-powered root cause assessment for the detected anomalies and communication issues. Analyze the interdependencies between communication problems, performance degradation, digital twin status, and any injected faults to determine underlying causes.
-4.  **Performance Analysis**:
-    *   **Bus Metrics Summary**: Summarize general bus performance metrics like overall throughput, latency, and utilization.
-    *   **AFDX Metrics Summary**: Summarize AFDX specific performance metrics such as jitter and BAG compliance for virtual links.
-    *   **ARINC Metrics Summary**: Summarize ARINC specific performance metrics like word transmission rate and label frequencies.
-    *   **Overall Performance Assessment**: Provide an AI-generated overall assessment of the system's current performance state and potential risks.
-5.  **Maintenance Recommendations**: Formulate clear, actionable, and prioritized maintenance recommendations based on all diagnostic findings, especially focusing on addressing identified root causes and improving system reliability.
-6.  **Reliability Assessment**: Provide an AI-generated assessment of the system's current and projected reliability, considering the detected issues and overall performance.
-
----
-
-### Provided Data for Analysis:
-
-#### ARINC 429 Statistics:
-Word Transmission Rate: {{{arincStatistics.wordTransmissionRate}}} words/sec
-Label Frequency: {{json arincStatistics.labelFrequency}}
-Parity Failure Rate: {{{arincStatistics.parityFailureRate}}}%
-Total Words Processed: {{{arincStatistics.totalWordsProcessed}}}
-Total Parity Errors: {{{arincStatistics.totalParityErrors}}}
-
-#### AFDX (ARINC 664) Statistics:
+#### AFDX (ARINC 664):
 Throughput: {{{afdxStatistics.throughput}}} Mbps
 Latency: {{{afdxStatistics.latency}}} ms
-Jitter: {{{afdxStatistics.jitter}}} ms
 BAG Compliance: {{json afdxStatistics.bagCompliance}}
-Virtual Link Load: {{json afdxStatistics.virtualLinkLoad}}
-Frame Delivery Success Rate: {{{afdxStatistics.frameDeliverySuccessRate}}}%
-Total Frames Processed: {{{afdxStatistics.totalFramesProcessed}}}
-Total CRC Errors: {{{afdxStatistics.totalCRCErrors}}}
-Total Sequence Errors: {{{afdxStatistics.totalSequenceErrors}}}
+Delivery Success: {{{afdxStatistics.frameDeliverySuccessRate}}}%
 
-#### Overall Communication Error Summary:
-{{{errorSummary}}}
-
-#### Injected Faults:
+#### Anomalies & Faults:
+Error Summary: {{{errorSummary}}}
 {{#if injectedFaults}}
+Injected:
 {{#each injectedFaults}}
-- Type: {{{this.type}}}, Location: {{{this.location}}}, Severity: {{{this.severity}}}, Duration: {{{this.duration}}}, Description: {{{this.description}}}
+- {{{this.type}}} @ {{{this.location}}} ({{{this.severity}}})
 {{/each}}
-{{else}}
-No faults were manually injected into the system during this period.
 {{/if}}
 
-#### Detected Anomalies:
-{{#if detectedAnomalies}}
-{{#each detectedAnomalies}}
-- Type: {{{this.type}}}
-{{#if this.sensorId}}, Sensor ID: {{{this.sensorId}}}{{/if}}
-{{#if this.virtualLinkId}}, Virtual Link ID: {{{this.virtualLinkId}}}{{/if}}
-, Timestamp: {{{this.timestamp}}}, Severity Score: {{{this.severityScore}}}, Confidence Score: {{{this.confidenceScore}}}, Details: {{{this.details}}}
-{{/each}}
-{{else}}
-No anomalies were detected by the AI engine.
-{{/if}}
+#### Digital Twin:
+System Health: {{{digitalTwinStatus.overallSystemStatus}}}
+Engine: {{{digitalTwinStatus.engineHealth}}}
+Hydraulic: {{{digitalTwinStatus.hydraulicHealth}}}
 
-#### Digital Twin Subsystem Status:
-Engine Health: {{{digitalTwinStatus.engineHealth}}}
-Hydraulic Health: {{{digitalTwinStatus.hydraulicHealth}}}
-Electrical Health: {{{digitalTwinStatus.electricalHealth}}}
-Fuel Health: {{{digitalTwinStatus.fuelHealth}}}
-Overall System Status: {{{digitalTwinStatus.overallSystemStatus}}}
-
----
-
-Please generate the comprehensive diagnostic report in JSON format, strictly adhering to the "AIDiagnosticReportOutputSchema". Ensure all fields are thoroughly populated based on the provided data and your expert analysis as an Aerospace Software Engineer, Avionics Systems Architect, and Aircraft Maintenance Diagnostics Expert.
-`
+Provide a detailed analysis strictly adhering to the output schema.`,
 });
 
 const aiDiagnosticReportGeneratorFlow = ai.defineFlow(

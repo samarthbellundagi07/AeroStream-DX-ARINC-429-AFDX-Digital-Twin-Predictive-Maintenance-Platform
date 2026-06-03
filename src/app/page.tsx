@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { BusSimulator } from "@/lib/bus-simulator";
 import { Arinc429Word, AfdxFrame, SubsystemStatus, BusMetrics, FaultConfig, Defect, FlightScenario } from "@/lib/types";
 import { TelemetryStream } from "@/components/bus/telemetry-stream";
@@ -16,11 +16,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { 
   LayoutDashboard, 
-  Terminal, 
   BarChart3, 
   FileText, 
-  Settings, 
-  Activity, 
   Wrench, 
   Plane, 
   PlayCircle 
@@ -80,9 +77,9 @@ export default function AeroStreamDXDashboard() {
     setCurrentScenario(s);
   };
 
-  const currentMetrics = metricsHistory[metricsHistory.length - 1] || {
+  const currentMetrics = useMemo(() => metricsHistory[metricsHistory.length - 1] || {
     throughput: 0, latency: 0, packetRate: 0, utilization: 0, errorRate: 0, arincRate: 0, afdxRate: 0, anomalyCount: 0
-  };
+  }, [metricsHistory]);
 
   const systemStatus = currentMetrics.errorRate > 8 ? 'Critical' : currentMetrics.errorRate > 3 ? 'Warning' : 'Normal';
 
@@ -95,7 +92,7 @@ export default function AeroStreamDXDashboard() {
             <Plane className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="font-headline font-bold text-xl tracking-tight leading-none">AEROSTREAM</h1>
+            <h1 className="font-headline font-bold text-xl tracking-tight leading-none text-foreground">AEROSTREAM</h1>
             <span className="text-[10px] text-accent font-bold tracking-[0.3em] opacity-80 uppercase">DX Station</span>
           </div>
         </div>
@@ -116,7 +113,7 @@ export default function AeroStreamDXDashboard() {
              </div>
              <div className="flex justify-between items-center">
                 <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Master Warning</span>
-                <div className={cn("w-2 h-2 rounded-full", systemStatus === 'Critical' ? "bg-destructive animate-ping" : "bg-accent/40")} />
+                <div className={cn("w-2 h-2 rounded-full", systemStatus === 'Critical' ? "bg-destructive animate-ping" : systemStatus === 'Warning' ? "bg-orange-500" : "bg-accent/40")} />
              </div>
           </div>
         </div>
@@ -135,7 +132,7 @@ export default function AeroStreamDXDashboard() {
           <div className="flex items-center gap-4">
             <div className="text-right">
               <div className="text-[10px] text-muted-foreground uppercase font-bold">Maintenance Privilege</div>
-              <div className="text-xs font-bold text-primary font-headline tracking-widest">FULL READ/WRITE ACCESS</div>
+              <div className="text-xs font-bold text-primary font-headline tracking-widest uppercase">Full Engineering Access</div>
             </div>
             <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-primary">DX</div>
           </div>

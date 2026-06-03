@@ -18,7 +18,7 @@ sequenceDiagram
     UI->>AI: Anomaly Signature
     AI-->>UI: Root Cause & Recommendation
     UI->>Rep: Mission Data Summary
-    Rep-->>UI: Executive PDF/JSON Report
+    Rep-->>UI: Executive Engineering Report
 ```
 
 ## 3. Protocol Processing Pipeline
@@ -26,7 +26,7 @@ sequenceDiagram
 ### ARINC 429 Engine
 - **Input**: 32-bit stream.
 - **Decoding**: Label (Bits 1-8, Octal), SDI (9-10), Data (11-29), SSM (30-31).
-- **Validation**: Bit 32 Parity (ODD).
+- **Validation**: Bit 32 Parity (ODD). Logic: `onesCount % 2 != 0`.
 
 ### AFDX Engine
 - **Virtual Links**: Logic routing based on VLID.

@@ -7,16 +7,16 @@
 ## 🚀 Key Features
 
 ### 📡 High-Fidelity Protocol Engines
-- **ARINC 429**: Bit-level word reconstruction, octal label decoding, SDI identification, and ODD parity validation.
-- **AFDX (ARINC 664)**: Virtual Link (VL) management, Bandwidth Allocation Gap (BAG) compliance monitoring, and sequence number integrity checking.
+- **ARINC 429 Engine**: Bit-level word reconstruction, octal label decoding, SDI identification, and ODD parity validation.
+- **AFDX (ARINC 664) Engine**: Virtual Link (VL) management, Bandwidth Allocation Gap (BAG) compliance monitoring, and sequence number integrity checking.
 
 ### 🧠 AI-Powered Diagnostics & PHM
 - **Anomaly Detection**: Real-time statistical and AI-driven detection of frozen values, signal spikes, and CRC/Parity violations.
 - **Predictive Maintenance**: Remaining Useful Life (RUL) estimation for Engine, Hydraulic, Electrical, and Fuel subsystems.
-- **Corrective Action Workflow**: Automated Fault Isolation Manual (FIM) step suggestions based on live telemetry.
+- **Corrective Action Workflow**: Automated Fault Isolation Manual (FIM) step suggestions based on live telemetry using Genkit and Gemini 2.0.
 
 ### ✈️ Digital Twin Telemetry
-- Real-time simulation of aircraft subsystems.
+- Real-time simulation of aircraft subsystems with high-frequency telemetry.
 - Fault propagation modeling (e.g., how an engine thermal spike impacts bus parity).
 - Scenario-based mission profiles (Normal, Hydraulic Failure, Engine Overheat, etc.).
 
@@ -42,7 +42,7 @@ graph TD
 ## 🎖 Portfolio Impact & Technical Achievements
 
 ### 🛠 Technical Deep Dive
-- **Protocol Engineering**: Implemented custom bit-masking logic for ARINC 429 ODD parity verification.
+- **Protocol Engineering**: Implemented custom bit-masking logic for ARINC 429 ODD parity verification and AFDX sequence integrity.
 - **Predictive Health Monitoring**: Developed a linear degradation model to estimate Remaining Useful Life (RUL) based on stress-weighted mission profiles.
 - **Generative AI Integration**: Engineered Genkit flows with specialized system prompts to act as a Senior Avionics Architect for Root Cause Analysis (RCA).
 - **HUD Interface**: Built a high-density, low-latency UI using Shadcn/UI and Recharts for real-time telemetry visualization.
@@ -61,20 +61,6 @@ graph TD
 - **AI/GenAI**: Genkit 1.x (Google Gemini 2.0 Flash).
 - **Visualization**: Recharts (High-performance telemetry graphs).
 - **Language**: TypeScript (Strict engineering types).
-
----
-
-## 📋 Installation & Setup
-
-### Prerequisites
-- Node.js 20+
-- Google Gemini API Key
-
-### Setup
-1. Clone the repository.
-2. Create a `.env` file with `GOOGLE_GENAI_API_KEY`.
-3. Install dependencies: `npm install`
-4. Run development mode: `npm run dev`
 
 ---
 
