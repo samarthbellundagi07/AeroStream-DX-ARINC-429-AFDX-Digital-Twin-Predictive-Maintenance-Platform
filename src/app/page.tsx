@@ -9,6 +9,7 @@ import { PerformanceOscilloscope } from "@/components/bus/performance-oscillosco
 import { StatusDashboard } from "@/components/digital-twin/status-dashboard";
 import { MaintenanceTool } from "@/components/ai/maintenance-tool";
 import { MaintenanceConsole } from "@/components/maintenance/console";
+import { ReportGenerator } from "@/components/ai/report-generator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -224,6 +225,10 @@ export default function AeroStreamDXDashboard() {
               <h2 className="text-3xl font-headline font-bold uppercase tracking-tight">Signal Integrity Analytics</h2>
               <PerformanceOscilloscope data={metricsHistory} />
             </div>
+          )}
+
+          {view === 'reports' && (
+            <ReportGenerator metrics={currentMetrics} subsystems={subsystems} defects={defects} />
           )}
         </div>
       </main>
