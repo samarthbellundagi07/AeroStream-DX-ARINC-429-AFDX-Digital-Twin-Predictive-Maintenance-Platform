@@ -22,14 +22,8 @@ import {
   Plane, 
   PlayCircle 
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatTimestamp } from "@/lib/utils";
 
-/**
- * AeroStream DX | Primary Dashboard Container
- * 
- * Orchestrates the real-time simulation stream, scenario management,
- * and navigation between major engineering workstations.
- */
 export default function AeroStreamDXDashboard() {
   const [arincStream, setArincStream] = useState<Arinc429Word[]>([]);
   const [afdxStream, setAfdxStream] = useState<AfdxFrame[]>([]);
@@ -55,7 +49,7 @@ export default function AeroStreamDXDashboard() {
       const anomalies = [newArinc, newAfdx].filter(x => !x.isValid).length;
       
       const newMetrics: BusMetrics = {
-        timestamp: new Date().toLocaleTimeString(),
+        timestamp: formatTimestamp(new Date()),
         throughput: 42 + Math.random() * 8 + (faultImpact * 5),
         latency: 1.2 + Math.random() * 0.4 + (faultImpact > 0 ? 1 : 0),
         packetRate: 150 + Math.random() * 30,

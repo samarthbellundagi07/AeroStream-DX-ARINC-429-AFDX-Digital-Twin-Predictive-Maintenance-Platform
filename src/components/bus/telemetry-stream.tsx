@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Activity, ShieldAlert, Wifi, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatTimestamp } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
 interface TelemetryStreamProps {
@@ -85,7 +85,7 @@ export function TelemetryStream({ arincWords, afdxFrames, type }: TelemetryStrea
                 "grid grid-cols-12 items-center gap-2 py-2 px-4 border-b border-border/10 hover:bg-white/5",
                 !word.isValid && "bg-destructive/15 text-destructive font-bold"
               )}>
-                <span className="col-span-2 opacity-50">{new Date(word.timestamp).toLocaleTimeString([], { fractionalSecondDigits: 3 })}</span>
+                <span className="col-span-2 opacity-50">{formatTimestamp(word.timestamp)}</span>
                 <span className="col-span-1 text-primary font-bold">{word.label}</span>
                 <span className="col-span-1 text-center opacity-70">{word.sdi}</span>
                 <span className="col-span-2 font-mono">{word.raw}</span>
@@ -103,7 +103,7 @@ export function TelemetryStream({ arincWords, afdxFrames, type }: TelemetryStrea
                 "grid grid-cols-12 items-center gap-2 py-2 px-4 border-b border-border/10 hover:bg-white/5",
                 !frame.isValid && "bg-destructive/15 text-destructive font-bold"
               )}>
-                <span className="col-span-2 opacity-50">{new Date(frame.timestamp).toLocaleTimeString([], { fractionalSecondDigits: 3 })}</span>
+                <span className="col-span-2 opacity-50">{formatTimestamp(frame.timestamp)}</span>
                 <span className="col-span-1 text-accent font-bold">VL{frame.vlid}</span>
                 <span className="col-span-2">SN: {frame.sequenceNumber.toString().padStart(3, '0')}</span>
                 <span className="col-span-1 text-center">{frame.bag}ms</span>
