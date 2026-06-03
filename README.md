@@ -11,9 +11,9 @@
 - **AFDX (ARINC 664) Engine**: Virtual Link (VL) management, Bandwidth Allocation Gap (BAG) compliance monitoring, and sequence number integrity checking.
 
 ### 🧠 AI-Powered Diagnostics & PHM
-- **Anomaly Detection**: Real-time statistical and AI-driven detection of frozen values, signal spikes, and CRC/Parity violations.
+- **Anomaly Detection**: Real-time detection of frozen values, signal spikes, and CRC/Parity violations using Genkit and Gemini 2.0.
 - **Predictive Maintenance**: Remaining Useful Life (RUL) estimation for Engine, Hydraulic, Electrical, and Fuel subsystems.
-- **Corrective Action Workflow**: Automated Fault Isolation Manual (FIM) step suggestions based on live telemetry using Genkit and Gemini 2.0.
+- **Corrective Action Workflow**: Automated Fault Isolation Manual (FIM) step suggestions based on live telemetry.
 
 ### ✈️ Digital Twin Telemetry
 - Real-time simulation of aircraft subsystems with high-frequency telemetry.
@@ -23,8 +23,6 @@
 ---
 
 ## 🏗 System Architecture
-
-The platform is built on a modern **Next.js 15** architecture using **Genkit** for generative AI diagnostics.
 
 ```mermaid
 graph TD
@@ -64,4 +62,4 @@ graph TD
 
 ---
 
-© 2025 AeroStream Technologies. For demonstration purposes only.
+© 2025 AeroStream Technologies. For professional portfolio demonstration purposes only.
