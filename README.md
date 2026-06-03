@@ -51,6 +51,24 @@ graph TD
 3. **AI Diagnostic**: Execute the "AI Analysis" in the Maintenance Hub to see root cause suggestions.
 
 ---
+## 📸 Screenshots
+
+### Dashboard View
+![Dashboard View](<screenshots/Screenshot (1081).png>)
+
+### Telemetry and Bus Monitoring
+![Telemetry and Bus Monitoring](<screenshots/Screenshot (1082).png>)
+
+### Maintenance Hub
+![Maintenance Hub](<screenshots/Screenshot (1083).png>)
+
+### Scenario Controller
+![Scenario Controller](<screenshots/Screenshot (1084).png>)
+
+### AI Diagnostic Panel
+![AI Diagnostic Panel](<screenshots/Screenshot (1085).png>)
+
+---
 
 ## 🛠 Technology Stack
 
